@@ -5,10 +5,10 @@ Aplikasi Siswa Belajar berbasis Website ini adalah aplikasi dengan project sekol
 ### 2. Struktur File - Direktori
 ```
 + presensi
-  + uploads
-    + foto
-      - masuk
-      - pulang 
+  + uploads/
+    + foto/
+      - masuk/   # direktori foto awal hadir sekolah  
+      - pulang/  # direktori foto akhir pulang sekolah  
   - index.php
 ```
 ### 3. Skema Database
@@ -16,4 +16,9 @@ Aplikasi Siswa Belajar berbasis Website ini adalah aplikasi dengan project sekol
 scheme_db.sql
 ```
 ### 4. Jalankan
+```
+http://localhost/presensi
+
+LOGIN SISWA: nis/1
+LOGIN ADMIN: admin/admin123 
 
