@@ -34,5 +34,5 @@ docker restart nama_container_php
 $host = "db"; // <----- atau sesuai nama container MySQL di docker-compose.yml
 $user = "root";
 $pass = "password";
-$db   = "presensi_siswa";
+$db   = "presensi";
 ```
