@@ -1,5 +1,5 @@
 # Troubleshooting on Armbian hosting
-## Kendala
+## Kendala I
 ```
 Fatal error: Uncaught Error: Class 'mysqli' not found in /var/www/html/presensi/index.php:16 Stack trace: #0 {main} thrown in /var/www/html/presensi/index.php on line 16
 ```
@@ -35,4 +35,21 @@ $host = "db"; // <----- atau sesuai nama container MySQL di docker-compose.yml
 $user = "root";
 $pass = "password";
 $db   = "presensi";
+```
+
+
+## Kendala II
+*Error Graphic Draw di browser muncul pada saat "Kirim Presensi". Ekstensi ini digunakan untuk memproses gambar secara dinamis.dengan pustaka GD (Graphics Draw)*
+
+## Solusi II
+#### a.Jalankan perintah ini di dalam Dockerfile atau container terminal
+```
+apt update -y && \
+apt install -y libpng-dev libjpeg-dev libfreetype6-dev && \
+docker-php-ext-configure gd --with-freetype --with-jpeg && \
+docker-php-ext-install gd
+```
+#### b. Restart container PHP/Server
+```
+docker restart nama_container_php
 ```
