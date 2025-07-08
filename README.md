@@ -1,5 +1,21 @@
-# SiwajarV3
+# SiwajarV3_(INSTALL DB)
 Lebih Simpel dan langsung instalasi Database nya
+### Keunggulan
+```
+a. Install Database Tabel berikut Record Dummy langsung Generate otomatis dari kode
+b. Buatkan lebih direktori secara manual
+   + uploads/foto
+     - masuk
+     - pulang
+   + uploads/lampiran
+     - ijin
+     - sakit
+c. Direktori di linux 
+   sudo mkdir -p uploads/foto/masuk uploads/foto/pulang uploads/lampiran/ijin uploads/lampiran/sakit && \
+   sudo chown -R www-data:www-data uploads/ && \
+   sudo chmod -R 775 uploads/ && \
+
+```
 ### Kekurangannya:
 ```
 - Belum ada Rule Pengajuan Ijin yang lengkap
