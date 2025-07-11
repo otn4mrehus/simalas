@@ -349,7 +349,7 @@ if (isset($_POST['login'])) {
             header('Location: index.php?page=admin');
             exit();
         } else {
-            $error = "NIS/Username atau password salah!";
+            $error = "NISN/Username atau password salah!";
         }
     }
 }
@@ -501,7 +501,7 @@ if (isset($_POST['reset_password'])) {
                 }
             }
         } else {
-            $reset_error = "NIS tidak ditemukan!";
+            $reset_error = "NISN tidak ditemukan!";
         }
     }
 }
@@ -1667,8 +1667,8 @@ if ($page == 'logout') {
 
                 <form method="POST">
                     <div class="form-group">
-                        <label for="identifier"><i class="fas fa-user"></i> Username (NIS)</label>
-                        <input type="text" id="identifier" name="identifier" required placeholder="Masukkan Username atau NIS ">
+                        <label for="identifier"><i class="fas fa-user"></i> Username (NISN)</label>
+                        <input type="text" id="identifier" name="identifier" required placeholder="Masukkan Username atau NISN ">
                     </div>
                     
                     <div class="form-group">
@@ -1697,14 +1697,14 @@ if ($page == 'logout') {
         
         <form method="POST">
             <div class="form-group">
-                <label for="nis"><i class="fas fa-id-card"></i> NIS</label>
-                <input type="text" id="nis" name="nis" required placeholder="Masukkan NIS Anda">
+                <label for="nis"><i class="fas fa-id-card"></i> NISN</label>
+                <input type="text" id="nis" name="nis" required placeholder="Masukkan NISN Anda">
             </div>
             
             <div class="form-group">
                 <label for="hint_answer"><?php 
                     // Tampilkan pertanyaan hint default
-                    echo isset($_POST['nis']) ? "Masukkan jawaban hint: " : "Pertanyaan hint akan ditampilkan setelah memasukkan NIS";
+                    echo isset($_POST['nis']) ? "Masukkan jawaban hint: " : "Pertanyaan hint akan ditampilkan setelah memasukkan NISN";
                 ?></label>
                 <input type="text" id="hint_answer" name="hint_answer" required placeholder="Masukkan jawaban hint">
                 <small>Contoh: Tokoh favorit, nama hewan peliharaan, dll.</small>
@@ -1751,7 +1751,7 @@ if ($page == 'logout') {
                 </div>
                 <div class="info-item">
                     <div class="info-value"><?php echo $_SESSION['nis']; ?></div>
-                    <div class="info-label"><i class="fas fa-id-card"></i> NIS</div>
+                    <div class="info-label"><i class="fas fa-id-card"></i> NISN</div>
                 </div>
             </div>
             
@@ -1851,7 +1851,7 @@ if ($result_libur->num_rows > 0) {
                 </div>
                 <div class="info-item">
                     <div class="info-value"><?php echo $_SESSION['nis']; ?></div>
-                    <div class="info-label"><i class="fas fa-id-card"></i> NIS</div>
+                    <div class="info-label"><i class="fas fa-id-card"></i> NISN</div>
                 </div>
             </div>
             
@@ -2168,7 +2168,7 @@ if ($result_libur->num_rows > 0) {
                 </div>
                 <div class="info-item">
                     <div class="info-value"><?php echo $_SESSION['nis']; ?></div>
-                    <div class="info-label"><i class="fas fa-id-card"></i> NIS</div>
+                    <div class="info-label"><i class="fas fa-id-card"></i> NISN</div>
                 </div>
             </div>
             
@@ -2403,7 +2403,7 @@ if ($result_libur->num_rows > 0) {
                             <tr><th><input type="checkbox" id="selectAllPresensi"></th>
                                 <th>No</th>
                                 <th>Tanggal</th>
-                                <th>NIS</th>
+                                <th>NISN</th>
                                 <th>Nama</th>
                                 <th>Jam Masuk</th>
                                 <th>Foto Masuk</th>
@@ -2532,8 +2532,9 @@ if ($result_libur->num_rows > 0) {
                             <div class="table-responsive">
                                 <table>
                                     <thead>
-                                        <tr>
-                                            <th>NIS</th>
+                                        <tr> 
+							  <th>No</th>
+                                            <th>NISN</th>
                                             <th>Nama</th>
                                             <th>Password</th>
                                             <th>Password Hint</th>
@@ -2600,7 +2601,7 @@ if ($result_libur->num_rows > 0) {
                                             <th><input type="checkbox" id="selectAllTerlambat"></th>
                                             <th>No</th>
                                             <th>Tanggal</th>
-                                            <th>NIS</th>
+                                            <th>NISN</th>
                                             <th>Nama</th>
                                             <th>Waktu Terlambat</th>
                                             <th>Keterangan</th>
@@ -2674,7 +2675,7 @@ if ($result_libur->num_rows > 0) {
                                         <tr><th><input type="checkbox" id="selectAllIzin"></th>
                                             <th>No</th>
                                             <th>Tanggal</th>
-                                            <th>NIS</th>
+                                            <th>NISN</th>
                                             <th>Nama</th>
                                             <th>Jenis</th>
                                             <th>Keterangan</th>
@@ -2998,7 +2999,7 @@ if ($result_libur->num_rows > 0) {
                                     <thead>
                                         <tr>
                                             <th>No</th>
-                                            <th>NIS</th>
+                                            <th>NISN</th>
                                             <th>Nama</th>
                                             <th>Hadir</th>
                                             <th>Tepat Waktu</th>
@@ -3132,7 +3133,7 @@ if ($result_libur->num_rows > 0) {
                                 <thead>
                                     <tr>
                                         <th>Peringkat</th>
-                                        <th>NIS</th>
+                                        <th>NISN</th>
                                         <th>Nama</th>
                                         <th>Kehadiran (%)</th>
                                     </tr>
@@ -3347,7 +3348,7 @@ function openEditPresensiModal(id) {
                             <h3 class="modal-title"><i class="fas fa-user-plus"></i> Tambah Siswa Baru</h3>
                             <form method="POST">
                                 <div class="form-group">
-                                    <label for="add_nis">NIS</label>
+                                    <label for="add_nis">NISN</label>
                                     <input type="text" id="add_nis" name="nis" required>
                                 </div>
                                 
@@ -3483,7 +3484,7 @@ function openEditPresensiModal(id) {
                 <h3 class="modal-title"><i class="fas fa-user-edit"></i> Edit Siswa</h3>
                 <form method="POST">
                     <div class="form-group">
-                        <label for="edit_nis">NIS</label>
+                        <label for="edit_nis">NISN</label>
                         <input type="text" id="edit_nis" name="nis" value="<?php echo $siswa_edit['nis']; ?>" readonly>
                     </div>
                     
