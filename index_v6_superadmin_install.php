@@ -1,6 +1,4 @@
-
 <?php
-// Versi 6 Superadmin instalastion
 // Set zona waktu ke Asia/Jakarta
 date_default_timezone_set('Asia/Jakarta');
 // Pastikan tidak ada output sebelum session_start()
@@ -10,7 +8,7 @@ if (session_status() == PHP_SESSION_NONE) {
 
 // ============ HEADER KEAMANAN ============ //
 // Lindungi dari XSS (browser akan memblokir serangan XSS jika dideteksi)
-header("X-XSS-Protection: 1; mode=block");
+//header("X-XSS-Protection: 1; mode=block");
 
 // Content Security Policy (Sesuaikan dengan kebutuhan aplikasi)
 header("Content-Security-Policy: default-src 'self'; img-src 'self' data: https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' 'unsafe-eval';");
@@ -19,10 +17,6 @@ header("Content-Security-Policy: default-src 'self'; img-src 'self' data: https:
 // Inisialisasi variabel $page dan $action dengan nilai default
 $page = isset($_GET['page']) ? $_GET['page'] : 'login';
 $action = isset($_GET['action']) ? $_GET['action'] : '';
-
-//Set Jam Masuk - Pulang
-$WaktuMasuk = "08:05";
-$WaktuPulang = "15:00";
 
 // Koneksi ke MySQL server (tanpa memilih database terlebih dahulu)
 $host = "127.0.0.1";
@@ -78,8 +72,8 @@ if ($result->num_rows == 0) {
             latitude DECIMAL(10,8) NOT NULL,
             longitude DECIMAL(11,8) NOT NULL,
             radius INT(11) NOT NULL COMMENT 'dalam meter',
-            jam_masuk TIME NOT NULL DEFAULT '07:30:00', 
-            jam_pulang TIME NOT NULL DEFAULT '15:30:00', 
+            waktu_masuk TIME NOT NULL DEFAULT '07:30:00', 
+            waktu_pulang TIME NOT NULL DEFAULT '15:30:00', 
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id)
@@ -171,7 +165,61 @@ if ($result->num_rows == 0) {
     // Jika database sudah ada, hanya pilih database
     $conn->select_db($db);
 }
+// ============ HANDLER HAPUS MASSAL ============ //
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    // Hapus massal presensi
+    if ($_POST['action'] == 'delete_selected_presensi' && !empty($_POST['selected_ids'])) {
+        $ids = implode(',', array_map('intval', $_POST['selected_ids']));
+        $sql = "DELETE FROM presensi WHERE id IN ($ids)";
+        if ($conn->query($sql)) {
+            $_SESSION['success_admin'] = count($_POST['selected_ids']) . " data presensi berhasil dihapus!";
+        } else {
+            $_SESSION['error_admin'] = "Error: " . $conn->error;
+        }
+        header("Location: index.php?page=admin#presensi");
+        exit();
+    }
 
+    // Hapus massal izin
+    if ($_POST['action'] == 'delete_selected_izin' && !empty($_POST['selected_ids'])) {
+        $ids = implode(',', array_map('intval', $_POST['selected_ids']));
+        $sql = "DELETE FROM absensi_izin WHERE id IN ($ids)";
+        if ($conn->query($sql)) {
+            $_SESSION['success_admin'] = count($_POST['selected_ids']) . " data izin berhasil dihapus!";
+        } else {
+            $_SESSION['error_admin'] = "Error: " . $conn->error;
+        }
+        header("Location: index.php?page=admin#pengajuan");
+        exit();
+    }
+
+    // Hapus massal terlambat
+    if ($_POST['action'] == 'delete_selected_terlambat' && !empty($_POST['selected_ids'])) {
+        $ids = implode(',', array_map('intval', $_POST['selected_ids']));
+        $sql = "DELETE FROM terlambat WHERE id IN ($ids)";
+        if ($conn->query($sql)) {
+            $_SESSION['success_admin'] = count($_POST['selected_ids']) . " data keterlambatan berhasil dihapus!";
+        } else {
+            $_SESSION['error_admin'] = "Error: " . $conn->error;
+        }
+        header("Location: index.php?page=admin#terlambat");
+        exit();
+    }
+
+    // Hapus massal periode libur
+    if ($_POST['action'] == 'delete_selected_libur' && !empty($_POST['selected_ids'])) {
+        $ids = implode(',', array_map('intval', $_POST['selected_ids']));
+        $sql = "DELETE FROM periode_libur WHERE id IN ($ids)";
+        if ($conn->query($sql)) {
+            $_SESSION['success_admin'] = count($_POST['selected_ids']) . " periode libur berhasil dihapus!";
+        } else {
+            $_SESSION['error_admin'] = "Error: " . $conn->error;
+        }
+        header("Location: index.php?page=admin#libur");
+        exit();
+    }
+}
+// ============ END HANDLER HAPUS MASSAL ============ //
 
 // Cek apakah ada data pengaturan
 $sql_pengaturan = "SELECT * FROM pengaturan ORDER BY id DESC LIMIT 1";
@@ -182,14 +230,17 @@ if ($result_pengaturan->num_rows > 0) {
     $latSekolah = $pengaturan['latitude'];
     $lngSekolah = $pengaturan['longitude'];
     $radiusSekolah = $pengaturan['radius'];
+    $jamMasuk = $pengaturan['waktu_masuk'];    // Fixed column name
+    $jamPulang = $pengaturan['waktu_pulang'];  // Fixed column name
 } else {
     // Default jika tidak ada pengaturan
     $latSekolah = -6.4105;
     $lngSekolah = 106.8440;
     $radiusSekolah = 100;
-    
+    $jamMasuk = $WaktuMasuk;
+    $jamPulang = $WaktuPulang;   
     // Insert data default
-    $conn->query("INSERT INTO pengaturan (latitude, longitude, radius) VALUES ($latSekolah, $lngSekolah, $radiusSekolah)");
+    $conn->query("INSERT INTO pengaturan (latitude, longitude, radius, waktu_masuk, waktu_pulang) VALUES ($latSekolah, $lngSekolah, $radiusSekolah, $jamMasuk, $JamPulang)");
 }
 
 // Fungsi untuk Format Waktu (Hari dan Tanggal Indonesia)
@@ -490,15 +541,24 @@ if (isset($_POST['save_pengaturan'])) {
     $latitude = $_POST['latitude'];
     $longitude = $_POST['longitude'];
     $radius = $_POST['radius'];
+    $jamMasuk = $_POST['jamMasuk'];   // NEW
+    $jamPulang =  $_POST['jamPulang']; // NEW
     
     // Update atau insert
     $check = $conn->query("SELECT id FROM pengaturan ORDER BY id ASC LIMIT 1");
     if ($check->num_rows > 0) {
         $row = $check->fetch_assoc();
         $id = $row['id'];
-        $sql = "UPDATE pengaturan SET latitude='$latitude', longitude='$longitude', radius='$radius' WHERE id=$id";
+        $sql = "UPDATE pengaturan SET 
+                latitude='$latitude', 
+                longitude='$longitude', 
+                radius='$radius',
+                waktu_masuk='$jamMasuk',
+                waktu_pulang='$jamPulang'
+                WHERE id=$id";
     } else {
-        $sql = "INSERT INTO pengaturan (latitude, longitude, radius) VALUES ('$latitude', '$longitude', '$radius')";
+        $sql = "INSERT INTO pengaturan (latitude, longitude, radius, waktu_masuk, waktu_pulang) 
+                VALUES ('$latitude', '$longitude', '$radius', '$jamMasuk', '$jamPulang')";
     }
     
     if ($conn->query($sql) === TRUE) {
@@ -510,6 +570,7 @@ if (isset($_POST['save_pengaturan'])) {
     }
 }
 
+//////////////////////////  HAPUS MASSAL DENGAN MULTI SELECT /////////////
 // Proses hapus periode libur
 if ($action == 'delete_periode_libur' && isset($_GET['id'])) {
     $id = $_GET['id'];
@@ -522,6 +583,8 @@ if ($action == 'delete_periode_libur' && isset($_GET['id'])) {
     header('Location: index.php?page=admin#libur');
     exit();
 }
+
+//////////////////////////  END HAPUS MASSAL DENGAN MULTI SELECT /////////////
 
 // Proses simpan keterangan terlambat
 if (isset($_POST['save_keterangan_terlambat'])) {
@@ -1024,7 +1087,7 @@ if ($page == 'logout') {
             flex: 1 1 calc(25% - 8px);
             min-width: 100px;
             padding: 8px;
-            background: white;
+            background: #FFFCFB;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
@@ -1537,8 +1600,8 @@ if ($page == 'logout') {
 </head>
 <body>
     <div class="header">
-        <h1><i class="fas fa-user-check"></i> Presensi Siswa</h1>
-        <p>Sistem Presensi Kelas XITKJ-2</p>
+        <h1><i class="fas fa-user-check"></i> PRESENSI SISWA TKJ</h1>
+        <p>Bukti Unjuk Kinerja Dengan Sistem Manajemen Kelas</p>
     </div>
     
     
@@ -2122,7 +2185,7 @@ if ($result_libur->num_rows > 0) {
                     
                     <?php
                     $nis_siswa = $_SESSION['nis'];
-                    $sql = "SELECT * FROM absensi_izin WHERE nis = '$nis_siswa' ORDER BY tanggal DESC";
+                    $sql = "SELECT * FROM absensi_izin WHERE nis = '$nis_siswa' ORDER BY tanggal DESC, jenis ASC";
                     $result = $conn->query($sql);
                     
                     if ($result->num_rows > 0): ?>
@@ -2294,10 +2357,16 @@ if ($result_libur->num_rows > 0) {
 			  $result = $conn->query($sql);
 			  
 			  if ($result->num_rows > 0): ?>
+
+            <form method="POST" action="index.php?page=admin#presensi">
+                <input type="hidden" name="action" value="delete_selected_presensi">
+                <button type="submit" class="btn-danger" style="margin-bottom: 10px;">
+                    <i class="fas fa-trash"></i> Hapus Data Terpilih
+                </button>
                 <div class="table-responsive">
                     <table>
                         <thead>
-                            <tr>
+                            <tr><th><input type="checkbox" id="selectAllPresensi"></th>
                                 <th>No</th>
                                 <th>Tanggal</th>
                                 <th>NIS</th>
@@ -2316,6 +2385,7 @@ if ($result_libur->num_rows > 0) {
                         <tbody>
                             <?php $no=1; while ($row = $result->fetch_assoc()): ?>
                                 <tr>
+                                    <td><input type="checkbox" class="presensi-check" name="selected_ids[]" value="<?= $row['id'] ?>"></td>
                                     <td><?php echo $no++; ?></td>
 				                    <td><?php echo formatTanggalID($row['tanggal']); ?></td>
 				                    <td><?php echo $row['nis']; ?></td>
@@ -2396,6 +2466,14 @@ if ($result_libur->num_rows > 0) {
 				        </tbody>
 				    </table>
 				</div>
+                <script>
+                    document.getElementById('selectAllPresensi').addEventListener('click', function() {
+                        const checkboxes = document.querySelectorAll('.presensi-check');
+                        checkboxes.forEach(checkbox => {
+                            checkbox.checked = this.checked;
+                        });
+                    });
+                </script>
 			  <?php else: ?>
 				<p style="text-align: center; padding: 15px; color: #7f8c8d;">Tidak ada data presensi</p>
 			  <?php endif; ?>
@@ -2473,12 +2551,19 @@ if ($result_libur->num_rows > 0) {
                                 WHERE p.keterangan_terlambat IS NOT NULL 
                                 ORDER BY p.tanggal DESC";
                         $result = $conn->query($sql);
-                        
-                        if ($result->num_rows > 0): ?>
+                        ?>
+
+                        <?php if ($result->num_rows > 0): ?>
+                        <form method="POST" action="index.php?page=admin#terlambat">
+                            <input type="hidden" name="action" value="delete_selected_terlambat">
+                            <button type="submit" class="btn-danger" style="margin-bottom: 10px;">
+                                <i class="fas fa-trash"></i> Hapus Data Terpilih
+                            </button>
                             <div class="table-responsive">
                                 <table>
                                     <thead>
                                         <tr>
+                                            <th><input type="checkbox" id="selectAllTerlambat"></th>
                                             <th>No</th>
                                             <th>Tanggal</th>
                                             <th>NIS</th>
@@ -2490,6 +2575,7 @@ if ($result_libur->num_rows > 0) {
                                     <tbody>
                                         <?php $no=1; while ($row = $result->fetch_assoc()): ?>
                                             <tr>
+                                                <td><input type="checkbox" class="terlambat-check" name="selected_ids[]" value="<?= $row['id'] ?>"></td>
                                                 <td><?php echo $no++; ?></td>
                                                 <td><?php echo formatTanggalID($row['tanggal']); ?></td>
                                                 <td><?php echo $row['nis']; ?></td>
@@ -2501,7 +2587,18 @@ if ($result_libur->num_rows > 0) {
                                     </tbody>
                                 </table>
                             </div>
+                        </form>
+                        <!-- TAMBAHKAN SCRIPT INI DI AKHIR TAB -->
+                            <script>
+                                document.getElementById('selectAllTerlambat').addEventListener('click', function() {
+                                    const checkboxes = document.querySelectorAll('.terlambat-check');
+                                    checkboxes.forEach(checkbox => {
+                                        checkbox.checked = this.checked;
+                                    });
+                                });
+                            </script>
                         <?php else: ?>
+                        
                             <p style="text-align: center; padding: 15px; color: #7f8c8d;">Tidak ada data keterlambatan</p>
                         <?php endif; ?>
                     </div>
@@ -2510,7 +2607,7 @@ if ($result_libur->num_rows > 0) {
                 <div id="pengajuan" class="tab-content">
                     <div class="card">
                         <h3 style="margin-bottom: 12px; font-size: 1.1rem;"><i class="fas fa-file-alt"></i> Pengajuan Izin Siswa</h3>
-                        <!--EDIT RUBAH-->
+                 <!--EDIT RUBAH-->
 				  <div class="presensi-info">
 					    <div class="info-item">
 						  <div class="info-value"><?php echo $total_ijin_siswa; ?></div>
@@ -2528,14 +2625,19 @@ if ($result_libur->num_rows > 0) {
 				  </div>
 
                         <?php 
-                        $sql = "SELECT a.*, s.nama FROM absensi_izin a JOIN siswa s ON a.nis = s.nis ORDER BY a.tanggal DESC";
+                        $sql = "SELECT a.*, s.nama FROM absensi_izin a JOIN siswa s ON a.nis = s.nis ORDER BY a.tanggal ASC";
                         $result = $conn->query($sql);
-                        
                         if ($result->num_rows > 0): ?>
-                            <div class="table-responsive">
+                        <!-- TAMBAHKAN FORM INI DI BAWAH HEADER TAB -->
+                        <form method="POST" action="index.php?page=admin#pengajuan">
+                            <input type="hidden" name="action" value="delete_selected_izin">
+                            <button type="submit" class="btn-danger" style="margin-bottom: 10px;">
+                                <i class="fas fa-trash"></i> Hapus Data Terpilih
+                            </button>
+                        <div class="table-responsive">
                                 <table>
                                     <thead>
-                                        <tr>
+                                        <tr><th><input type="checkbox" id="selectAllIzin"></th>
                                             <th>No</th>
                                             <th>Tanggal</th>
                                             <th>NIS</th>
@@ -2549,17 +2651,18 @@ if ($result_libur->num_rows > 0) {
                                     </thead>
                                     <tbody>
                                         <?php $no=1; while ($row = $result->fetch_assoc()): ?>
-                                            <tr>
+                                            <tr><td><input type="checkbox" class="izin-check" name="selected_ids[]" value="<?= $row['id'] ?>"></td>
                                                 <td><?php echo $no++; ?></td>
                                                 <td><?php echo formatTanggalID($row['tanggal']); ?></td>
                                                 <td><?php echo $row['nis']; ?></td>
                                                 <td><?php echo $row['nama']; ?></td>
                                                 <td><?php echo ucfirst($row['jenis']); ?></td>
                                                 <td><?php echo substr($row['keterangan'], 0, 50) . (strlen($row['keterangan']) > 50 ? '...' : ''); ?></td>
- 								<td>
-								<a href="uploads/lampiran/<?php echo $row['lampiran']; ?>" target="_blank">
-								<img class="foto-presensi" src="uploads/lampiran/<?php echo $row['lampiran']; ?>" ></td>
-								</a>
+                                                <td>
+                                                    <a href="uploads/lampiran/<?php echo $row['lampiran']; ?>" target="_blank">
+                                                    <img class="foto-presensi" src="uploads/lampiran/<?php echo $row['lampiran']; ?>" >
+                                                    </a>
+                                                </td>
                                                 <td>
                                                     <?php if ($row['status'] == 'pending'): ?>
                                                         <span class="status-pending">Menunggu</span>
@@ -2587,6 +2690,15 @@ if ($result_libur->num_rows > 0) {
                                     </tbody>
                                 </table>
                             </div>
+                        </form>
+                        <script>
+                            document.getElementById('selectAllIzin').addEventListener('click', function() {
+                                const checkboxes = document.querySelectorAll('.izin-check');
+                                checkboxes.forEach(checkbox => {
+                                    checkbox.checked = this.checked;
+                                });
+                            });
+                         </script>
                         <?php else: ?>
                             <p style="text-align: center; padding: 15px; color: #7f8c8d;">Tidak ada pengajuan izin</p>
                         <?php endif; ?>
@@ -2613,6 +2725,20 @@ if ($result_libur->num_rows > 0) {
                                 <input type="number" id="radius" name="radius" value="<?php echo $radiusSekolah; ?>" required min="10">
                             </div>
                             
+                             <!-- NEW TIME SETTINGS -->
+                            <h4 style="margin: 25px 0 10px; color: #2c3e50;"><i class="fas fa-clock"></i> Waktu Presensi</h4>
+                            <div class="form-group">
+                                <label for="jam_masuk">Waktu Masuk</label>
+                                <input type="time" id="jam_masuk" name="jamMasuk" value="<?php echo $jamMasuk; ?>" required>
+                                <small>Waktu maksimal untuk presensi masuk</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="jam_pulang">Waktu Pulang</label>
+                                <input type="time" id="jam_pulang" name="jamPulang" value="<?php echo $jamPulang; ?>" required>
+                                <small>Waktu minimal untuk presensi pulang</small>
+                            </div>
+                            <!-- END NEW TIME SETTINGS -->
                             <button type="submit" name="save_pengaturan" class="btn-success">Simpan Pengaturan</button>
                         </form>
                     </div>
@@ -2720,12 +2846,17 @@ if ($result_libur->num_rows > 0) {
                             <?php
                             $sql = "SELECT * FROM periode_libur ORDER BY tanggal_mulai DESC";
                             $result = $conn->query($sql);
-                            
                             if ($result->num_rows > 0): ?>
+                            <form method="POST" action="index.php?page=admin#libur">
+                                <input type="hidden" name="action" value="delete_selected_libur">
+                                <button type="submit" class="btn-danger" style="margin-bottom: 10px;">
+                                    <i class="fas fa-trash"></i> Hapus Data Terpilih
+                                </button>
                                 <div class="table-responsive">
                                     <table>
                                         <thead>
                                             <tr>
+                                                <th><input type="checkbox" id="selectAllLibur"></th>
                                                 <th>No</th>
                                                 <th>Nama Periode</th>
                                                 <th>Tanggal Mulai</th>
@@ -2737,6 +2868,7 @@ if ($result_libur->num_rows > 0) {
                                         <tbody>
                                             <?php $no=1; while ($row = $result->fetch_assoc()): ?>
                                                 <tr>
+                                                    <td><input type="checkbox" class="libur-check" name="selected_ids[]" value="<?= $row['id'] ?>"></td>
                                                     <td><?= $no++ ?></td>
                                                     <td><?= $row['nama_periode'] ?></td>
                                                     <td><?= formatTanggalID($row['tanggal_mulai']) ?></td>
@@ -2758,6 +2890,16 @@ if ($result_libur->num_rows > 0) {
                                         </tbody>
                                     </table>
                                 </div>
+                            </form>
+                            <!-- TAMBAHKAN SCRIPT INI DI AKHIR TAB -->
+                            <script>
+                                document.getElementById('selectAllLibur').addEventListener('click', function() {
+                                    const checkboxes = document.querySelectorAll('.libur-check');
+                                    checkboxes.forEach(checkbox => {
+                                        checkbox.checked = this.checked;
+                                    });
+                                });
+                            </script>
                             <?php else: ?>
                                 <p style="text-align: center; padding: 15px; color: #7f8c8d;">Belum ada periode libur</p>
                             <?php endif; ?>
@@ -2990,7 +3132,7 @@ if ($result_libur->num_rows > 0) {
                 <div class="modal-content">
                     <span class="close-modal" onclick="closeEditPresensiModal()">&times;</span>
                     <h3 class="modal-title"><i class="fas fa-edit"></i> Edit Data Presensi</h3>
-                    <form method="POST" action="index.php?page=admin#presensi">
+                    <form method="POST" action="index.php?page=admin#presensi" id="editPresensiForm">
                         <input type="hidden" name="id" id="edit_presensi_id">
                         
                         <div class="form-group">
@@ -3000,19 +3142,132 @@ if ($result_libur->num_rows > 0) {
                         
                         <div class="form-group">
                             <label for="edit_jam_masuk">Jam Masuk</label>
-                            <input type="time" id="edit_jam_masuk" name="jam_masuk" step="1">
+                            <input type="time" id="edit_jam_masuk" name="jam_masuk" step="1" onchange="calculateStatus()">
+                            <input type="hidden" id="edit_status_masuk" name="status_masuk">
+                            <input type="hidden" id="edit_keterangan_terlambat" name="keterangan_terlambat">
                         </div>
                         
                         <div class="form-group">
                             <label for="edit_jam_pulang">Jam Pulang</label>
-                            <input type="time" id="edit_jam_pulang" name="jam_pulang">
+                            <input type="time" id="edit_jam_pulang" name="jam_pulang" step="1" onchange="calculateStatus()">
+                            <input type="hidden" id="edit_status_pulang" name="status_pulang">
+                            <input type="hidden" id="edit_keterangan_pulang_cepat" name="keterangan_pulang_cepat">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Status Masuk</label>
+                            <div id="status_masuk_display" style="padding: 8px; background: #f0f0f0; border-radius: 4px;">
+                                - Status akan dihitung otomatis -
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Status Pulang</label>
+                            <div id="status_pulang_display" style="padding: 8px; background: #f0f0f0; border-radius: 4px;">
+                                - Status akan dihitung otomatis -
+                            </div>
                         </div>
                         
                         <button type="submit" name="update_presensi" class="btn-success">Simpan Perubahan</button>
                     </form>
                 </div>
             </div>
+            <script>
+// Fungsi untuk menghitung status berdasarkan jam
+function calculateStatus() {
+    // Ambil nilai jam masuk dan pulang
+    const jamMasuk = document.getElementById('edit_jam_masuk').value;
+    const jamPulang = document.getElementById('edit_jam_pulang').value;
+    
+    // Ambil pengaturan jam dari PHP
+    const jamMasukStandar = "<?php echo $JamMasuk; ?>";
+    const jamPulangStandar = "<?php echo $JamPulang; ?>";
+    
+    // Hitung status masuk
+    let statusMasuk = 'tepat waktu';
+    let keteranganMasuk = null;
+    
+    if (jamMasuk) {
+        const waktuMasuk = new Date(`2000-01-01T${jamMasuk}`);
+        const waktuStandarMasuk = new Date(`2000-01-01T${jamMasukStandar}`);
+        
+        if (waktuMasuk > waktuStandarMasuk) {
+            statusMasuk = 'terlambat';
+            
+            // Hitung selisih waktu
+            const selisihDetik = (waktuMasuk - waktuStandarMasuk) / 1000;
+            const selisihMenit = Math.round(selisihDetik / 60);
+            
+            if (selisihMenit >= 60) {
+                const jam = Math.floor(selisihMenit / 60);
+                const menit = selisihMenit % 60;
+                keteranganMasuk = `${jam} Jam ${menit} Menit`;
+            } else {
+                keteranganMasuk = `${selisihMenit} Menit`;
+            }
+        }
+    }
+    
+    // Hitung status pulang
+    let statusPulang = 'tepat waktu';
+    let keteranganPulang = null;
+    
+    if (jamPulang) {
+        const waktuPulang = new Date(`2000-01-01T${jamPulang}`);
+        const waktuStandarPulang = new Date(`2000-01-01T${jamPulangStandar}`);
+        
+        if (waktuPulang < waktuStandarPulang) {
+            statusPulang = 'cepat';
+            
+            // Hitung selisih waktu
+            const selisihDetik = (waktuStandarPulang - waktuPulang) / 1000;
+            const selisihMenit = Math.round(selisihDetik / 60);
+            
+            if (selisihMenit >= 60) {
+                const jam = Math.floor(selisihMenit / 60);
+                const menit = selisihMenit % 60;
+                keteranganPulang = `${jam} Jam ${menit} Menit`;
+            } else {
+                keteranganPulang = `${selisihMenit} Menit`;
+            }
+        }
+    }
+    
+    // Set nilai hidden fields
+    document.getElementById('edit_status_masuk').value = statusMasuk;
+    document.getElementById('edit_keterangan_terlambat').value = keteranganMasuk || '';
+    document.getElementById('edit_status_pulang').value = statusPulang;
+    document.getElementById('edit_keterangan_pulang_cepat').value = keteranganPulang || '';
+    
+    // Update tampilan
+    document.getElementById('status_masuk_display').innerHTML = 
+        `<b>${statusMasuk.toUpperCase()}</b>` + 
+        (keteranganMasuk ? `<br>${keteranganMasuk}` : '');
+    
+    document.getElementById('status_pulang_display').innerHTML = 
+        `<b>${statusPulang.toUpperCase()}</b>` + 
+        (keteranganPulang ? `<br>${keteranganPulang}` : '');
+}
 
+// Panggil fungsi saat modal dibuka
+function openEditPresensiModal(id) {
+    fetch('index.php?page=admin&action=get_presensi&id=' + id)
+        .then(response => response.json())
+        .then(data => {
+            // Isi form
+            document.getElementById('edit_presensi_id').value = data.id;
+            document.getElementById('edit_tanggal').value = data.tanggal;
+            document.getElementById('edit_jam_masuk').value = data.jam_masuk;
+            document.getElementById('edit_jam_pulang').value = data.jam_pulang;
+            
+            // Hitung status awal
+            calculateStatus();
+            
+            // Tampilkan modal
+            document.getElementById('editPresensiModal').style.display = 'block';
+        });
+}
+</script>
             <script>
                 // Tab switching
                 const tabs = document.querySelectorAll('.nav-tabs a');
@@ -3167,6 +3422,24 @@ if ($result_libur->num_rows > 0) {
                     return parts.map(part => part.padStart(2, '0')).join(':');
                     }
 
+
+                    // Konfirmasi penghapusan massal untuk semua form
+                    document.querySelectorAll('form[action*="delete_selected"]').forEach(form => {
+                        form.addEventListener('submit', function(e) {
+                            // Ambil semua checkbox yang tercentang
+                            const checked = this.querySelectorAll('input[type="checkbox"]:checked').length;
+                            
+                            if (checked === 0) {
+                                alert('Pilih setidaknya satu data untuk dihapus!');
+                                e.preventDefault();
+                                return;
+                            }
+                            
+                            if (!confirm(`Apakah Anda yakin ingin menghapus ${checked} data terpilih?`)) {
+                                e.preventDefault();
+                            }
+                        });
+                    });
             </script>
         <?php endif; ?>
         
@@ -3218,6 +3491,8 @@ if ($result_libur->num_rows > 0) {
 /*
 Update:
 Versi 3 (Superadmin) LENGKAP
-- Edit / Delete Presensi (Hanya untuk personal saja!)
+- Multi Select Data
+- Approve ijin
+- Setting Hari Libur
 */
 ?>
