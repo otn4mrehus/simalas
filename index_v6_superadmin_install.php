@@ -19,10 +19,10 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'login';
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 
 // Koneksi ke MySQL server (tanpa memilih database terlebih dahulu)
-$host = "127.0.0.1";
+$host = "mysql";
 $user = "root";
-$pass = "";
-$db = "presensi_pelajar";
+$pass = "toor";
+$db = "absensiku_xitkj2";
 
 // Buat koneksi pertama ke MySQL server
 $conn = new mysqli($host, $user, $pass);
@@ -142,13 +142,47 @@ if ($result->num_rows == 0) {
     }
 
     // Insert data default
-    $password_hash_1 = '$2y$10$SKwXFa5vWWAejQqM2qMsQ.NFEnEux9tt6JhyJiOdVguhaB7BGrnIq';  // password 'budi123'
-    $password_hash_2 = '$2y$10$SKwXFa5vWWAejQqM2qMsQ.NFEnEux9tt6JhyJiOdVguhaB7BGrnIq';  // password 'ani123'
+    $password_hash_1 = '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu';  // password '123'
+    $password_hash_2 = '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu';  // password '123'
 
+    // password '123'
     $defaultData = [
         "siswa" => "INSERT INTO siswa (nis, nama, password, kelas_id, kelas) VALUES 
-            ('12345', 'Budi Santoso', '$password_hash_1', NULL, NULL),
-            ('54321', 'Ani Wijaya', '$password_hash_2', NULL, NULL)",
+     ('0093819515', 'ADLI M HANAFIAH', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0091558896', 'AGUNG GUNAWAN DRAJAT', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0095000071', 'AKBAR SYARIF MUBAROK', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0062978096', 'ARIANA SUHARDIMAN', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0089507568', 'BAYU IKHFADINILLAH', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0085813973', 'DESI NURKARIN', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0084052847', 'ERLANGGA WIJAYA SAPUTRA', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0096450349', 'FAJAR HIDAYATULLOH', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0097499769', 'FATIMAH', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0095892343', 'FERDIAN REZA PRATAMA', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0073464943', 'FITRIYANI', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0089763058', 'GUSTOFA NAZEL', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0085365719', 'HERLINA', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0091833896', 'HUSNI', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0062068091', 'IKBAL FAULA', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0099532630', 'INTAN NURAINI', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0091816202', 'ISMALIAH', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0086728034', 'LELY AMINAH', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0097342590', 'MAFLUHA', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0081299270', 'MEILANI PUSPITA SARI', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0095399190', 'MUHAMAD FATIH', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0071879521', 'MUHAMMAD FATURROHMAN', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0092206514', 'NITA TANIA', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0095320513', 'RATU BILQIS', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0087923569', 'RIHATUL AMBARIYAH', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0099500677', 'RISKI MUBAROK', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0092396187', 'ROSITA', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0091673306', 'SARNUJI', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0091794503', 'SITI AMANDA', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0089712518', 'SITI AMINAH', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0096212539', 'SITI EKASAVITRI', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('3072705691', 'SITI MUSLIHAH', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0089846738', 'SUKESIH', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0063984255', 'TUBAGUS SOLIHIN', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL), 
+     ('0086097794', 'WILDA', '$2y$10$TaIHxsQzHlzRuJdQU9k6Mu44ZhFQjpWOj6SIm12vygyaQfhF8jenu', NULL, NULL)",
         
         "pengaturan" => "INSERT INTO pengaturan (latitude, longitude, radius) VALUES 
             ('-6.41050000', '106.84400000', 100)"
@@ -3491,8 +3525,6 @@ function openEditPresensiModal(id) {
 /*
 Update:
 Versi 3 (Superadmin) LENGKAP
-- Multi Select Data
-- Approve ijin
-- Setting Hari Libur
+- Edit / Delete Presensi (Hanya untuk personal saja!)
 */
 ?>
